@@ -22,14 +22,14 @@ const reactive = <T extends Object>(target: T) => {
         // 读取
         get(target, key, receiver) {
             const res = Reflect.get(target, key)
-            console.log("收集依赖", res)
+
             track(target,key)
             return res
         },
         // 写入
         set(target, key, value, receiver) {
             const res = Reflect.set(target, key, value)
-            console.log("更新依赖", res)
+
             trigger(target,key,value)
             return res
         },

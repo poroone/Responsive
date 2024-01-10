@@ -57,7 +57,7 @@ export const trigger = (target, key, value: any) => {
     const deps: Set<any> = depsMap.get(key)
     console.log(depsMap, deps)
     deps.forEach((fn) => {
-        if(fn&&fn.options&&fn.options.scheduler){s
+        if(fn&&fn.options&&fn.options.scheduler){
             fn.options.scheduler(fn)
         }else{
             fn()
