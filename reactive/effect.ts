@@ -3,14 +3,25 @@
 //纯函数 immer.js 不可变数据实现 lmmutavle.js
 // 里面的值不能被外界所影响,不论什么环境下都是独立的
 
-let activeEffect; 
+interface Options {
+    scheduler?: Function
+    lazy: boolean
+}
+let activeEffect;
 
-export const effect = (fn: Function) => {
+export const effect = (fn: Function, options?: Options) => {
     const _effect = () => {
         activeEffect = _effect
-        fn()
+        let res = fn()
+        return res
     }
-    _effect()
+    _effect.options = options
+    if (options && options.lazy) {
+        return _effect
+    } else {
+        _effect()
+        return _effect
+    }
 }
 
 const targetMap = new WeakMap()
@@ -41,11 +52,16 @@ export const track = (target: object, key) => {
 
 // 更新依赖
 export const trigger = (target, key, value: any) => {
+
     const depsMap = targetMap.get(target)
-    const deps:Set<Function>=depsMap.get(key)
-    console.log(depsMap,deps)
-    deps.forEach((fn)=>{
-        fn()
+    const deps: Set<any> = depsMap.get(key)
+    console.log(depsMap, deps)
+    deps.forEach((fn) => {
+        if(fn&&fn.options&&fn.options.scheduler){s
+            fn.options.scheduler(fn)
+        }else{
+            fn()
+        }
     })
 
 }
