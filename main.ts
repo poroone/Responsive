@@ -1,11 +1,4 @@
-/*
- * @Author: poro poroone@163.com
- * @Date: 2024-01-08 12:56:35
- * @LastEditors: poro poroone@163.com
- * @LastEditTime: 2024-01-15 13:07:33
- * @FilePath: \my 实现满哥的c:\Users\poroo\Desktop\poroone\vuesource\main.ts
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
+
 import reactive from "./reactive/reactive"
 import { effect } from "./reactive/effect"
 import { computed } from "./reactive/computed"
@@ -13,7 +6,10 @@ import watch from "./reactive/watch"
 import shallowReactive from "./reactive/shallowReactive"
 import {toRaw} from "./reactive/toRaw"
 import ref from "./reactive/ref"
-const obj = ref({
+import toRef from "./reactive/toRef"
+
+
+const obj = reactive({
     name: "poro",
     age: 18,
     foo:{
@@ -22,7 +18,8 @@ const obj = ref({
         }
     }
 })
-
+// toRef
+let name=toRef(obj,"name")
 
 const obj2 =shallowReactive({
     foo:{
@@ -50,15 +47,17 @@ watch(obj, (newVal, oldVal) => {
 effect(() => {
     // document.querySelector("#app")!.innerHTML = obj.foo.bar.baz as unknown as string
     // document.querySelector("#app")!.innerHTML = obj2.foo.bar.baz 
-        document.querySelector("#app")!.innerHTML = obj.value.age as any
+        // document.querySelector("#app")!.innerHTML = obj.value.age as any
+        document.querySelector("#app")!.innerHTML = name.value
 })
 const btn = document.querySelector("#btn")! as HTMLElement
 const btn2 = document.querySelector("#btn2")! as HTMLElement
 btn.onclick = () => {
     // console.log(obj.age)
     // obj.age++
-    console.log(obj.value.age)
-    obj.value.age++
+    // console.log(obj.value.age)
+    // obj.value.age++
+    name.value="132"
 }
 btn2.onclick = () => {
     console.log(obj)

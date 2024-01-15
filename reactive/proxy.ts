@@ -18,8 +18,9 @@
 
 // 数据响应
 import { track, trigger } from "./effect"
+import reactive from "./reactive"
 
-const createReactive = <T extends Object>(target: T, shallow: boolean = false) => {
+const createReactive = <T extends Object>(target: T, shallow: boolean = false):T => {
     // 修改数组的length 不能劫持
     return new Proxy(target, {
         // 读取
@@ -27,14 +28,14 @@ const createReactive = <T extends Object>(target: T, shallow: boolean = false) =
             if (key == "raw") {
                 return target
             }
-            const res = Reflect.get(target, key)
+            const res = Reflect.get(target, key,receiver)
             if (shallow) {
                 return res
             }
             track(target, key)
             // 深层响应添加递归 
             if (typeof res === "object" && res !== null) {
-                return createReactive(res)
+                return reactive(res)
             } else {
                 return res
             }
