@@ -2,7 +2,7 @@
 // 里面的值可以被外界所影响 产生副作用不确定性
 //纯函数 immer.js 不可变数据实现 lmmutavle.js
 // 里面的值不能被外界所影响,不论什么环境下都是独立的
-
+// 数据更新函数
 interface Options {
     scheduler?: Function
     lazy: boolean
@@ -15,6 +15,7 @@ export const effect = (fn: Function, options?: Options) => {
         let res = fn()
         return res
     }
+ 
     _effect.options = options
     if (options && options.lazy) {
         return _effect
@@ -22,6 +23,7 @@ export const effect = (fn: Function, options?: Options) => {
         _effect()
         return _effect
     }
+
 }
 
 const targetMap = new WeakMap()
@@ -45,6 +47,7 @@ export const track = (target: object, key) => {
         deps = new Set()
         depsMap.set(key, deps)
     }
+    
     deps.add(activeEffect)
     // 更新依赖
 }

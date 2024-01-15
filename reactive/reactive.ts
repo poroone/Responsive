@@ -15,29 +15,9 @@
 // 配合reflect 反射去使用
 // 1.更加语义化
 // 2.同时支持13个动作做很proxy一样 reflect
-import {track,trigger}from "./effect"
+import createReactive from "./proxy"
 const reactive = <T extends Object>(target: T) => {
-    // 修改数组的length 不能劫持
-    return new Proxy(target, {
-        // 读取
-        get(target, key, receiver) {
-            const res = Reflect.get(target, key)
-
-            track(target,key)
-            return res
-        },
-        // 写入
-        set(target, key, value, receiver) {
-            const res = Reflect.set(target, key, value)
-
-            trigger(target,key,value)
-            return res
-        },
-        // 函数调用
-        apply() {
-
-        },
-    })
+    return createReactive(target)
 }
 
-export default reactive
+export default reactive 
