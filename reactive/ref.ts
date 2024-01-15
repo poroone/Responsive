@@ -12,12 +12,14 @@ class RefImpl<T>{
         this._value = toReactive(value)
     }
     get value() {
+        // 收集
         track(this, 'value')
         return toReactive(this._value)
     }
     set value(newVal: T) {
         if (newVal === this._value) return
         this._value = toReactive(newVal)
+        // 更新
         trigger(this, "value", newVal)
     }
 }

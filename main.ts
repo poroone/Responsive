@@ -12,7 +12,8 @@ import { computed } from "./reactive/computed"
 import watch from "./reactive/watch"
 import shallowReactive from "./reactive/shallowReactive"
 import {toRaw} from "./reactive/toRaw"
-const obj = reactive({
+import ref from "./reactive/ref"
+const obj = ref({
     name: "poro",
     age: 18,
     foo:{
@@ -41,28 +42,29 @@ watch(obj, (newVal, oldVal) => {
 })
 
 // 计算属性
-let test = computed(() => {
-    return obj.age + obj.name+"computed"
-})
+// let test = computed(() => {
+//     return obj.age + obj.name+"computed"
+// })
 
-console.log(test)
+// console.log(test)
 effect(() => {
-    document.querySelector("#app")!.innerHTML = obj.foo.bar.baz as unknown as string
+    // document.querySelector("#app")!.innerHTML = obj.foo.bar.baz as unknown as string
     // document.querySelector("#app")!.innerHTML = obj2.foo.bar.baz 
+        document.querySelector("#app")!.innerHTML = obj.value.age as any
 })
 const btn = document.querySelector("#btn")! as HTMLElement
 const btn2 = document.querySelector("#btn2")! as HTMLElement
 btn.onclick = () => {
     // console.log(obj.age)
     // obj.age++
-    console.log(obj.foo.bar.baz)
-    obj.foo.bar.baz="test"
+    console.log(obj.value.age)
+    obj.value.age++
 }
 btn2.onclick = () => {
     console.log(obj)
     console.log(obj2)
     console.log(toRaw(obj2))
 } 
-obj.age
-obj.age = 999
-obj.age
+// obj.age
+// obj.age = 999
+// obj.age

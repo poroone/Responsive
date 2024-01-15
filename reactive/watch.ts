@@ -13,6 +13,7 @@ const traverse = (target: any, seen = new Set()) => {
 
 
 }
+
 const watch = (source, cb: Function, options?: Options) => {
     let getters: Function
     if (typeof source === "function") {
