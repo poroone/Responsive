@@ -42,4 +42,7 @@ toReactive 如果是个对象调用 reactive
 ## render 渲染器
 
 ### vNode
+
 ### render
+
+### 快速diff算法

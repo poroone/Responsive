@@ -24,7 +24,7 @@ const obj = reactive({
 })
 let { name, age } = toRefs(obj)
 
-console.log(app)
+// console.log(app)
 // 变成响应式的
 effect(() => {
     const vnode: Vnode = {
@@ -34,20 +34,131 @@ effect(() => {
         },
         children: [
             {
-                tag: "p",
-                children: obj.name,
-                key:1
+                tag: "div",
+                children: "oldKey1",
+                key: 1
             },
             {
-                tag: "span",
-                children: obj.age,
-                key:2
+                tag: "div",
+                children: "oldKey:2",
+                key: 2
+            },
+            {
+                tag: "div",
+                children: "oldKey3",
+                key: 3
+            },
+            {
+                tag: "div",
+                children: "oldKey4",
+                key: 4
+            },
+            {
+                tag: "div",
+                children: "oldKey5",
+                key: 5
+            },
+            {
+                tag: "div",
+                children: "oldKey6",
+                key: 6
+            }
+        ]
+    }
+
+    const vnode2: Vnode = {
+        tag: "div",
+        props: {
+            id: "test"
+        },
+        children: [
+            {
+                tag: "div",
+                children: "newKey1",
+                key: 1
+            },
+            {
+                tag: "div",
+                children: "newKey:3",
+                key: 3
+            },
+            {
+                tag: "div",
+                children: "newKey4",
+                key: 4
+            },
+            {
+                tag: "div",
+                children: "newKey2",
+                key: 2
+            },
+            {
+                tag: "div",
+                children: "newKey7",
+                key: 7
+            },
+            {
+                tag: "p",
+                children: "newKey",
+                key: 8
+            },
+            {
+                tag: "p",
+                children: "newKey",
+                key: 6
+            }
+        ]
+    }
+    const addvnode2: Vnode = {
+        tag: "div",
+        props: {
+            id: "test"
+        },
+        children: [
+            {
+                tag: "div",
+                children: "newKey1",
+                key: 1
+            },
+            {
+                tag: "div",
+                children: "newKey:2",
+                key: 2
+            },
+            {
+                tag: "div",
+                children: "newKey3",
+                key: 3
+            }
+            , 
+            {
+                tag: "div",
+                children: "newKey4",
+                key: 4
+            },
+
+            {
+                tag: "div",
+                children: "newKey5",
+                key: 5
+            },
+            {
+                tag: "div",
+                children: "newKey7",
+                key: 7
+            },
+            {
+                tag: "p",
+                children: "newKey6",
+                key: 6
             }
         ]
     }
 
     const renderer = createRenderer()
     renderer.render(vnode, app)
+    // renderer.render(vnode2, app)
+    renderer.render(addvnode2, app)
 })
 
 
@@ -93,25 +204,25 @@ effect(() => {
 // console.log(test)
 // effect(() => {
 //     // document.querySelector("#app")!.innerHTML = obj.foo.bar.baz as unknown as string
-//     // document.querySelector("#app")!.innerHTML = obj2.foo.bar.baz 
+//     // document.querySelector("#app")!.innerHTML = obj2.foo.bar.baz
 //     // document.querySelector("#app")!.innerHTML = obj.value.age as any
 //     document.querySelector("#app")!.innerHTML = vnode
 // })
-const btn = document.querySelector("#btn")! as HTMLElement
-const btn2 = document.querySelector("#btn2")! as HTMLElement
-btn.onclick = () => {
-    // console.log(obj.age)
-    obj.age++
-    // console.log(obj.value.age)
-    // obj.value.age++
-    // name.value = "132"
-}
-btn2.onclick = () => {
+// const btn = document.querySelector("#btn")! as HTMLElement
+// const btn2 = document.querySelector("#btn2")! as HTMLElement
+// btn.onclick = () => {
+//     // console.log(obj.age)
+//     obj.age++
+//     // console.log(obj.value.age)
+//     // obj.value.age++
+//     // name.value = "132"
+// }
+// btn2.onclick = () => {
 
-    obj.name="你好"
-    // console.log(obj2)
-    // console.log(toRaw(obj2))
-}
+//     obj.name="你好"
+//     // console.log(obj2)
+//     // console.log(toRaw(obj2))
+// }
 // obj.age
 // obj.age = 999
 // obj.age

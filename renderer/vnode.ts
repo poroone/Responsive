@@ -5,7 +5,7 @@ class Vnode {
     el?: HTMLElement//真实dom
     props?: Record<any, any>  //属性
     key?: string | number  //key
-    children?: Vnode[] | string | number //子
+    children?: Vnode[] | string  //子
 }
 
 export default Vnode
