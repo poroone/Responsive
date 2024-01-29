@@ -164,14 +164,14 @@ const createRenderer = () => {
 
             let anchor
             if (typeof newChildren != 'string') {
-                console.log(newChildren[archIndex])
+                // console.log(newChildren[archIndex])
                 anchor = archIndex < newChildren.length ? newChildren[archIndex].el : null
             } else {
                 anchor = null
             }
             while (j <= newEnd) {
                 // patch 会调用inster
-                console.log(el)
+                // console.log(el)
                 patch(null, newChildren[j++], el, anchor)
             }
             // insert(el, anchor)
@@ -180,6 +180,49 @@ const createRenderer = () => {
             while (j <= oldEnd) {
                 unmount(oldChildren[j++] as Vnode)
             }
+        } else {
+            // image中映射表 就节点的key对应新节点的下标
+            // 移动 新增 删除
+            // 求出那几个需要处理 
+            const count = newEnd - j + 1
+            const source = new Array(count).fill(-1)
+            // -1 就代表有新增的
+            const newStart = j
+            const oldStart = j
+            let moved = false //检车有没有移动的
+            const keyIndex = new Map()
+            keyIndex
+
+            for (let i = newStart; i <= newEnd; i++) {
+                if (typeof newChildren != "string") {
+                    // key index 索引表
+                    keyIndex.set(newChildren[i].key, i)
+                }
+            }
+            let patchd = 0 //已处理过的节点统计 不要重复处理
+            let pos = 0 //最长递增子序列 前面的节点 太靠后不想移动 前面的快
+            for (let i = oldStart; i <= oldEnd; i++) {
+                oldVnode = oldChildren[i] as Vnode  //旧的vnode
+           
+                if (patchd < count) {
+                    // 找到可以服用的节点
+                    const k = keyIndex.get(oldVnode.key)
+               
+                    if (k != undefined) {
+                        newVnode = newChildren[k] as Vnode
+                        patch(oldVnode, newVnode, el)
+                        patchd++
+                        source[k-newStart]=i
+                        // 2 3 1 -1 -1
+                        // key (3-1=2 1-1=0 2-1=1)
+                        // source 去给seq提供 去求最长递增子序列
+                        // 通过最长递增子序列 就能找到那个节点要移动
+                        console.log(source)
+                    }
+                }
+            }
+
+            console.log(keyIndex)
         }
     }
 

@@ -79,17 +79,17 @@ effect(() => {
             },
             {
                 tag: "div",
-                children: "newKey:3",
+                children: "newKey:4",
                 key: 3
             },
             {
                 tag: "div",
-                children: "newKey4",
+                children: "newKey5",
                 key: 4
             },
             {
                 tag: "div",
-                children: "newKey2",
+                children: "newKey3",
                 key: 2
             },
             {
@@ -109,56 +109,56 @@ effect(() => {
             }
         ]
     }
-    const addvnode2: Vnode = {
-        tag: "div",
-        props: {
-            id: "test"
-        },
-        children: [
-            {
-                tag: "div",
-                children: "newKey1",
-                key: 1
-            },
-            {
-                tag: "div",
-                children: "newKey:2",
-                key: 2
-            },
-            {
-                tag: "div",
-                children: "newKey3",
-                key: 3
-            }
-            , 
-            {
-                tag: "div",
-                children: "newKey4",
-                key: 4
-            },
+    // const addvnode2: Vnode = {
+    //     tag: "div",
+    //     props: {
+    //         id: "test"
+    //     },
+    //     children: [
+    //         {
+    //             tag: "div",
+    //             children: "newKey1",
+    //             key: 1
+    //         },
+    //         {
+    //             tag: "div",
+    //             children: "newKey:2",
+    //             key: 2
+    //         },
+    //         {
+    //             tag: "div",
+    //             children: "newKey3",
+    //             key: 3
+    //         }
+    //         , 
+    //         {
+    //             tag: "div",
+    //             children: "newKey4",
+    //             key: 4
+    //         },
 
-            {
-                tag: "div",
-                children: "newKey5",
-                key: 5
-            },
-            {
-                tag: "div",
-                children: "newKey7",
-                key: 7
-            },
-            {
-                tag: "p",
-                children: "newKey6",
-                key: 6
-            }
-        ]
-    }
+    //         {
+    //             tag: "div",
+    //             children: "newKey5",
+    //             key: 5
+    //         },
+    //         // {
+    //         //     tag: "div",
+    //         //     children: "newKey7",
+    //         //     key: 7
+    //         // },
+    //         {
+    //             tag: "p",
+    //             children: "newKey6",
+    //             key: 6
+    //         }
+    //     ]
+    // }
 
     const renderer = createRenderer()
     renderer.render(vnode, app)
-    // renderer.render(vnode2, app)
-    renderer.render(addvnode2, app)
+    renderer.render(vnode2, app)
+    // renderer.render(addvnode2, app)
 })
 
 
