@@ -12,10 +12,16 @@ import toRefs from "./reactive/toRefs"
 import createRenderer from "./renderer/render"
 import { MyComponent } from "./renderer/component"
 import ast from "./compile/ast"
+import parse from "./compile/parse"
+import transnform from "./compile/trasnform"
 // import card from "./component/card.ts"
 const app = document.querySelector("#app")
 
-ast("<div>poro</div>")
+const res = ast("<div><span>asdasdasd</span><span>asdasdasd</span></div>")
+const root = parse(res)
+const d=transnform(root)
+// 解析template
+console.log(res, "123", root,d)
 
 /**
  * 
@@ -169,7 +175,7 @@ effect(() => {
 
     const renderer = createRenderer()
 
-    renderer.render(MyComponent, app)
+    renderer.render(d, app)
     // renderer.render(vnode, app)
     // renderer.render(vnode2, app)
     // renderer.render(addvnode2, app)
