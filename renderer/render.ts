@@ -1,5 +1,58 @@
 // 挂在dom 根响应式原理绑定 
 import type Vnode from "./vnode"
+import reactive from "../reactive/reactive"
+import { effect } from "../reactive/effect"
+import { queueJob } from "./queue"
+import resolveProps from "./props"
+import emit from "./emit"
+// 最长递增子序列 贪心+二分查找 vue源码
+const getSequence = (arr) => {
+    const p = arr.slice()
+    const result = [0]
+    let i, j, u, v, c
+    const len = arr.length
+    for (i = 0; i < len; i++) {
+        const arrI = arr[i]
+        if (arrI !== 0) {
+            j = result[result.length - 1]
+            if (arr[j] < arrI) {
+                p[i] = j
+                result.push(i)
+                continue
+            }
+            u = 0
+            v = result.length - 1
+            while (u < v) {
+                c = ((u + v) / 2) | 0
+                if (arr[result[c]] < arrI) {
+                    u = c + 1
+                } else {
+                    v = c
+                }
+            }
+            if (arrI < arr[result[u]]) {
+
+                if (u > 0) {
+                    p[i] = result[u - 1]
+                }
+                result[u] = i
+            }
+        }
+    }
+    u = result.length
+    v = result[u - 1]
+    while (u-- > 0) {
+        result[u] = v
+        v = p[v]
+    }
+    return result
+}
+// 返回的下标 [0 4 6 7] =>[0 2 6 14]
+//     [0,8,4,12,2,10,6,14]
+//      0 1 2 3  4  5 6  7
+// DP   1 1 1 1  1  1 1  1
+// DP   1 2 2 3  2  3 3   4
+
 const createRenderer = () => {
     // 打补丁
     /**
@@ -9,38 +62,119 @@ const createRenderer = () => {
      * @param container  挂载点
      * @param anchor  挂载位置
      */
-    const patch = (oldNode, newNode, container, anchor = null) => {
-        console.log(anchor, container, "patch")
+    const patch = (oldNode, newNode: Vnode | Promise<Vnode>, container, anchor = null) => {
+        // console.log(oldNode, newNode, "patch")
         // 如果没有旧节点是需要挂载
-        if (!oldNode) {
-            mountElement(newNode, container, anchor)
-        } else {
-            // 更新
-            const { tag } = newNode
+        // 更新
 
+        if (newNode instanceof Promise) {
+            newNode.then(vnode => patch(oldNode, vnode, container, anchor))
+        } else {
+            const { tag } = newNode
             if (typeof tag === "string") {
                 //没有旧的
                 if (!oldNode) {
                     // 挂载 第一次进来没有旧元素就进行挂载
-                    console.log(anchor, "123")
+                    // console.log(newNode, container, anchor, "新的")
                     mountElement(newNode, container, anchor)
                 } else {
                     // console.log(newNode, oldNode, "新旧")
                     // 热 更新 diff
                     if (typeof newNode.children === "string") {
                         // 如果是文字直接更新
+                        // console.log(newNode, newNode, oldNode.el, "新的")
                         patchChildren(oldNode, newNode, oldNode.el)
                     } else {
                         // 否则diff对比后更新
                         patchElement(oldNode, newNode)
                     }
                 }
+            } else if (typeof tag === "object") {
+                // console.log(oldNode, newNode)
+                if (!oldNode) {
+                    mountComponent(newNode, container, anchor)
+                }
+
             }
         }
 
-
         // console.log(newNode, oldNode)
 
+    }
+    // 挂载组件
+    const mountComponent = (vnode: Vnode, container, anchor = null) => {
+        const componentOptions = vnode.tag
+        if (typeof componentOptions !== "string") {
+            const { data, setup, props: propsOptions, render, beforeCreate, created, beforeMount, mounted, beforeUpdate, updated } = componentOptions
+
+            beforeCreate && beforeCreate()
+            const state = reactive(data())//响应式的值
+            const [props, attrs] = resolveProps(propsOptions, vnode.props)
+
+            const instance = {
+                state,
+                isMounted: false,
+                subTree: null,
+                props
+            }
+            vnode.component = instance
+            // emmit 
+            const setupState = setup(props, {
+                attrs,
+                emit: (event, args: any[]) => emit(event, instance, args)
+            })
+
+            // 优先data去拿值 没有再去props拿值
+            const renderContext = new Proxy(instance, {
+                get(target, key, receiver) {
+                    if (setupState && key in setupState) {
+                        return setupState[key]
+                    } else if (state && key in state) {
+                        return state[key]
+                    } else if (props && key in props) {
+                        return props[key]
+                    } else {
+                        return console.error("key is not in state")
+                    }
+                },
+                set(target, key, value, receiver) {
+                    const { state, props } = target
+                    if (setupState && key in setupState) {
+                        return setupState[key] = value
+                    } else if (state && key in state) {
+                        state[key] = value
+                    } else if (props && key in props) {
+                        props[key] = value
+                    } else {
+                        console.error("key is not in state or properties")
+                        return true
+                    }
+                }
+
+            })
+            created && created.call(renderContext)
+            effect(() => {
+                const subTree = render.call(renderContext)
+                if (!instance.isMounted) {
+                    // 首次挂载
+                    beforeMount && beforeMount.call(renderContext)
+                    patch(null, subTree, container, anchor)
+                    instance.isMounted = true
+                    mounted && mounted.call(renderContext)
+                } else {
+
+                    // 更新 
+                    beforeUpdate && beforeUpdate.call(renderContext)
+                    patch(instance.subTree, subTree, container)
+                    updated && updated.call(renderContext)
+                }
+                instance.subTree = subTree
+            }, {
+                scheduler: queueJob
+            })
+
+        }
+        // console.log(componentOptions)
     }
     // 挂载节点
     const mountElement = (vnode: Vnode, container: any, anchor = null) => {
@@ -56,7 +190,19 @@ const createRenderer = () => {
                 patch(null, child, el)
             })
         }
+        if (vnode.props) {
+            for (const key in vnode.props) {
+                if (key.startsWith('on')) {
+                    for (let event in vnode.props[key]) {
+                        el.addEventListener(event, vnode.props[key][event])
+                    }
+                } else {
+                    const val = vnode.props[key]
+                    el.setAttribute(key, val)
+                }
 
+            }
+        }
         insert(container, el, anchor)
     }
     // 指定插入元素
@@ -67,7 +213,7 @@ const createRenderer = () => {
      * @param arch  节点插入的位置null默认末尾 referenceNode newNode 将要插在这个节点之前
      */
     const insert = (parent: HTMLElement, el, arch = null) => {
-        console.log(el, arch, "element")
+        // console.log(parent, el, arch, "element")
         parent.insertBefore(el, arch)
     }
     // 卸载元素
@@ -85,8 +231,6 @@ const createRenderer = () => {
     const setElementText = (el, text) => {
         return el.textContent = text
     }
-
-
     // 热更新 
     const patchElement = (oldNode, newNode) => {
         // 获取一下元素
@@ -107,9 +251,9 @@ const createRenderer = () => {
             newNode.children.forEach((children, index) => {
                 patch(oldNode.children[index], children, el)
             })
+
         }
     }
-
     // 快速diff算发
     // 1.前序对比 key   
     // 2.尾序对比 key   因为可以节省性能如果前面的都没变只有最后一个变了 前面的循环就没有意义 前面找找 后面找找性能最优
@@ -125,6 +269,7 @@ const createRenderer = () => {
     // 核心思想 服用已有dom修改内容 ,
     // 不理想情况 删除所有子集重新创建
     const patchKeyChildren = (oldVnode: Vnode, newVnode: Vnode, el) => {
+
         // oldVnode  旧的
         // newVnode  新的
         // el   元素 挂载点
@@ -157,7 +302,10 @@ const createRenderer = () => {
             oldVnodeChildren = oldChildren[oldEnd] as Vnode
             newVnodeChildren = newChildren[newEnd] as Vnode
         }
-
+        if (oldEnd == -1) return
+        if (newEnd == -1) return
+        if (isNaN(oldEnd)) return
+        if (isNaN(newEnd)) return
         // 插入 j大于旧节点 j小于新节点 插入有新增的
         if (j > oldEnd && j <= newEnd) {
             const archIndex = newEnd + 1;//要插到哪
@@ -172,6 +320,8 @@ const createRenderer = () => {
             while (j <= newEnd) {
                 // patch 会调用inster
                 // console.log(el)
+
+
                 patch(null, newChildren[j++], el, anchor)
             }
             // insert(el, anchor)
@@ -184,7 +334,7 @@ const createRenderer = () => {
             // image中映射表 就节点的key对应新节点的下标
             // 移动 新增 删除
             // 求出那几个需要处理 
-            const count = newEnd - j + 1
+            const count = newEnd - j + 1   //出去前前 后后 中间的
             const source = new Array(count).fill(-1)
             // -1 就代表有新增的
             const newStart = j
@@ -196,37 +346,88 @@ const createRenderer = () => {
             for (let i = newStart; i <= newEnd; i++) {
                 if (typeof newChildren != "string") {
                     // key index 索引表
+
                     keyIndex.set(newChildren[i].key, i)
                 }
             }
             let patchd = 0 //已处理过的节点统计 不要重复处理
             let pos = 0 //最长递增子序列 前面的节点 太靠后不想移动 前面的快
             for (let i = oldStart; i <= oldEnd; i++) {
-                oldVnode = oldChildren[i] as Vnode  //旧的vnode
-           
+                oldVnodeChildren = oldChildren[i] as Vnode  //旧的vnode
+
                 if (patchd < count) {
                     // 找到可以服用的节点
-                    const k = keyIndex.get(oldVnode.key)
-               
+
+                    const k = keyIndex.get(oldVnodeChildren.key)
+
                     if (k != undefined) {
-                        newVnode = newChildren[k] as Vnode
-                        patch(oldVnode, newVnode, el)
+                        newVnodeChildren = newChildren[k] as Vnode
+                        patch(oldVnodeChildren, newVnodeChildren, el)
                         patchd++
-                        source[k-newStart]=i
+                        source[k - newStart] = i
                         // 2 3 1 -1 -1
                         // key (3-1=2 1-1=0 2-1=1)
                         // source 去给seq提供 去求最长递增子序列
                         // 通过最长递增子序列 就能找到那个节点要移动
-                        console.log(source)
+
+                        // console.log(k, pos)
+                        if (k < pos) {
+                            moved = true
+                            // 处理新增和移动
+
+                        } else {
+                            pos = k
+                        }
+                    } else {
+                        // 越界元素 卸载
+                        unmount(oldVnodeChildren)
                     }
                 }
             }
+            // 处理新增 和移动
+            if (moved) {
+                const seq = getSequence(source)
+                let s = seq.length - 1
+                let i = count - 1
+                for (i; i >= 0; i--) {
+                    // 新增
+                    if (source[i] === -1) {
+                        const pos = i + newStart
+                        const newVnode = newChildren[pos]
+                        let anchor
+                        if (typeof newChildren != "string") {
+                            anchor = pos + 1 < newChildren.length ? newChildren[pos + 1].el : null
+                        } else {
+                            anchor = null
+                        }
 
-            console.log(keyIndex)
+                        patch(null, newVnode, el, anchor)
+                    } else if (i != seq[s]) {
+                        // 移动    
+
+                        const pos = i + newStart
+                        const newVnode = newChildren[pos]
+                        let anchor
+                        if (typeof newChildren != "string") {
+                            anchor = pos + 1 < newChildren.length ? newChildren[pos + 1].el : null
+
+                        } else {
+                            anchor = null
+                        }
+                        if (typeof newVnode != "string") {
+                            insert(el, newVnode.el, anchor)
+                        }
+                    } else {
+                        // i==seq [i] 说明不需要移动
+                        s--
+                    }
+                }
+
+
+            }
+            // console.log(keyIndex)
         }
     }
-
-
     const render = (Vnode: Vnode, container: any) => {
         if (Vnode) {
             // 进行deff算法

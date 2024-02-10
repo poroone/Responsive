@@ -40,9 +40,54 @@ toReactive 如果是个对象调用 reactive
 ### watch
 
 ## render 渲染器
+    
 
-### vNode
+### defineAsyncComponent.ts
+异步组件可以对组件异步引入 可以用于骨架屏 并且会进行代码分包 单独拆分成js不对打到主包里
+### component.ts
+组件
+### emit.ts
+传值 存储到props中
+### props.ts
+传值
+### queue.ts
+nextTick 
+### vNode.ts
+ 用来描述节点的
+### render.ts
+渲染器
+#### getSequence 
+最长递增子序列算法
+#### patch
+ 用来打补丁虚拟dom对比
+#### mountElement
+ 挂载节点
+#### insert
+ 插入元素
+      @param parent 父元素
+      @param el  插入的节点
+      @param arch  节点插入的位置null默认末尾 referenceNode newNode 将要插在这个节点之前
+#### unmount
+ 卸载节点
+#### createElement
+ 创建元素
+#### setElementText
+ 插入文字
+#### patchElement
+ 热更新
+#### patchChildren
+ 更新内容
+#### patchKeyChildren
+ 快速diff算法
+ oldVnode  旧的
+ newVnode  新的
+ el   元素 挂载点
+ #### render
+ 渲染
+### diff 算法 
+ 前序对比 :从数组第一个对比key一样的就直接复用 调用patch
+ 尾序对比 :从数组最后一个对比key一样的就直接复用 调用patch
+ 乱序对比 :移动的 删除的 新增的 
+ 
+## 编译器
 
-### render
-
-### 快速diff算法

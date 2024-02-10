@@ -5,7 +5,7 @@
 // 数据更新函数
 interface Options {
     scheduler?: Function
-    lazy: boolean
+    lazy?: boolean
 }
 let activeEffect;
 
@@ -55,12 +55,10 @@ export const track = (target: object, key) => {
 
 // 更新依赖
 export const trigger = (target, key, value: any) => {
-
     const depsMap = targetMap.get(target)
     const deps: Set<any> = depsMap.get(key)
-    console.log(depsMap, deps)
     deps.forEach((fn) => {
-        if(fn&&fn.options&&fn.options.scheduler){
+        if(fn && fn.options && fn.options.scheduler){
             fn.options.scheduler(fn)
         }else{
             fn()

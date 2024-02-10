@@ -10,9 +10,21 @@ import toRef from "./reactive/toRef"
 import type Vnode from "./renderer/vnode"
 import toRefs from "./reactive/toRefs"
 import createRenderer from "./renderer/render"
-
+import { MyComponent } from "./renderer/component"
+import ast from "./compile/ast"
+// import card from "./component/card.ts"
 const app = document.querySelector("#app")
 
+ast("<div>poro</div>")
+
+/**
+ * 
+ * template : `<div>asdasdasdasd</div>`  => {
+ *                                         tag："div",children:"asdasdasdasd"
+ *                                        }
+ * 
+ * 
+ */
 const obj = reactive({
     name: "poro",
     age: 18,
@@ -24,7 +36,6 @@ const obj = reactive({
 })
 let { name, age } = toRefs(obj)
 
-// console.log(app)
 // 变成响应式的
 effect(() => {
     const vnode: Vnode = {
@@ -79,36 +90,37 @@ effect(() => {
             },
             {
                 tag: "div",
-                children: "newKey:4",
+                children: "newKey:3",
                 key: 3
             },
             {
                 tag: "div",
-                children: "newKey5",
+                children: "newKey4",
                 key: 4
             },
             {
                 tag: "div",
-                children: "newKey3",
+                children: "newKey2",
                 key: 2
             },
             {
-                tag: "div",
+                tag: "p",
                 children: "newKey7",
                 key: 7
             },
             {
                 tag: "p",
-                children: "newKey",
-                key: 8
+                children: "newKey5",
+                key: 5
             },
             {
                 tag: "p",
-                children: "newKey",
+                children: "newKey6",
                 key: 6
             }
         ]
     }
+
     // const addvnode2: Vnode = {
     //     tag: "div",
     //     props: {
@@ -156,8 +168,10 @@ effect(() => {
     // }
 
     const renderer = createRenderer()
-    renderer.render(vnode, app)
-    renderer.render(vnode2, app)
+
+    renderer.render(MyComponent, app)
+    // renderer.render(vnode, app)
+    // renderer.render(vnode2, app)
     // renderer.render(addvnode2, app)
 })
 
@@ -204,25 +218,25 @@ effect(() => {
 // console.log(test)
 // effect(() => {
 //     // document.querySelector("#app")!.innerHTML = obj.foo.bar.baz as unknown as string
-//     // document.querySelector("#app")!.innerHTML = obj2.foo.bar.baz
+//     // document.querySelector("#app")!.innerHTML = obj2.foo.bar.baz 
 //     // document.querySelector("#app")!.innerHTML = obj.value.age as any
 //     document.querySelector("#app")!.innerHTML = vnode
 // })
-// const btn = document.querySelector("#btn")! as HTMLElement
-// const btn2 = document.querySelector("#btn2")! as HTMLElement
-// btn.onclick = () => {
-//     // console.log(obj.age)
-//     obj.age++
-//     // console.log(obj.value.age)
-//     // obj.value.age++
-//     // name.value = "132"
-// }
-// btn2.onclick = () => {
+const btn = document.querySelector("#btn")! as HTMLElement
+const btn2 = document.querySelector("#btn2")! as HTMLElement
+btn.onclick = () => {
+    // console.log(obj.age)
+    obj.age++
+    // console.log(obj.value.age)
+    // obj.value.age++
+    // name.value = "132"
+}
+btn2.onclick = () => {
 
-//     obj.name="你好"
-//     // console.log(obj2)
-//     // console.log(toRaw(obj2))
-// }
+    obj.name = "你好"
+    // console.log(obj2)
+    // console.log(toRaw(obj2))
+}
 // obj.age
 // obj.age = 999
 // obj.age
